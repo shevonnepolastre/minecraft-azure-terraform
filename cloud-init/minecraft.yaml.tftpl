@@ -1,0 +1,63 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+
+packages:
+  - docker.io
+  - docker-compose-v2
+
+write_files:
+  - path: /opt/minecraft/compose.yaml
+    owner: root:root
+    permissions: "0644"
+    content: |
+      services:
+        minecraft:
+          image: itzg/minecraft-server:latest
+          container_name: minecraft
+          restart: unless-stopped
+          ports:
+            - "${minecraft_port}:${minecraft_port}"
+          environment:
+            EULA: ${eula_json}
+            TYPE: "VANILLA"
+            VERSION: ${version_json}
+            SERVER_NAME: ${server_name_json}
+            MOTD: ${motd_json}
+            MEMORY: ${memory_json}
+            MAX_PLAYERS: ${max_players_json}
+            DIFFICULTY: ${difficulty_json}
+            SERVER_PORT: "${minecraft_port}"
+          volumes:
+            - /opt/minecraft/data:/data
+          tty: true
+          stdin_open: true
+
+  - path: /etc/systemd/system/minecraft.service
+    owner: root:root
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Minecraft server container
+      Requires=docker.service
+      After=docker.service network-online.target
+
+      [Service]
+      Type=oneshot
+      RemainAfterExit=yes
+      WorkingDirectory=/opt/minecraft
+      ExecStart=/usr/bin/docker compose up -d
+      ExecStop=/usr/bin/docker compose down
+      TimeoutStartSec=0
+
+      [Install]
+      WantedBy=multi-user.target
+
+runcmd:
+  - mkdir -p /opt/minecraft/data
+  - systemctl enable --now docker
+  - systemctl daemon-reload
+  - systemctl enable --now minecraft.service
+
+final_message: "Minecraft server bootstrap complete."
+

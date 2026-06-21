@@ -1,0 +1,31 @@
+subscription_id = "00000000-0000-0000-0000-000000000000"
+location        = "eastus"
+name_prefix     = "minecraft"
+
+# Generate a key with: ssh-keygen -t ed25519 -C "minecraft-azure"
+ssh_public_key = "ssh-ed25519 AAAA... replace-me"
+
+# Set this to your public IP with /32 to enable SSH.
+# Leave it null to keep inbound SSH closed.
+ssh_source_address_prefix = null
+
+# Use "*" for a public server, or restrict this to a trusted CIDR.
+minecraft_source_address_prefix = "*"
+
+vm_size               = "Standard_D2s_v5"
+minecraft_version     = "LATEST"
+minecraft_server_name = "My Azure Minecraft Server"
+minecraft_motd        = "Welcome!"
+minecraft_memory      = "2G"
+max_players           = 10
+difficulty            = "normal"
+
+# Review https://aka.ms/MinecraftEULA before changing this value.
+eula = true
+
+tags = {
+  application = "minecraft"
+  environment = "production"
+  managed-by  = "terraform"
+}
+
