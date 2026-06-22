@@ -8,3 +8,4 @@ terraform.tfvars
 backend.tf
 *.pem
 *.key
+*.claude
