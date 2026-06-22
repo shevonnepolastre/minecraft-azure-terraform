@@ -13,6 +13,9 @@ locals {
     motd_json        = jsonencode(var.minecraft_motd)
     server_name_json = jsonencode(var.minecraft_server_name)
     version_json     = jsonencode(var.minecraft_version)
+    minecraft_type = var.minecraft_type
   })
+
+
 }
 

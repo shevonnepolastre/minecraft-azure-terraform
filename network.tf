@@ -7,7 +7,7 @@ resource "azurerm_virtual_network" "this" {
 }
 
 resource "azurerm_subnet" "this" {
-  name                 = "minecraft-subnet"
+  name                 = "${var.name_prefix}-subnet"
   resource_group_name  = azurerm_resource_group.this.name
   virtual_network_name = azurerm_virtual_network.this.name
   address_prefixes     = ["10.20.1.0/24"]
@@ -29,7 +29,26 @@ resource "azurerm_network_security_group" "this" {
   tags                = local.common_tags
 }
 
-resource "azurerm_network_security_rule" "minecraft" {
+resource "azurerm_network_interface" "this" {
+  name                = "${var.name_prefix}-nic"
+  location            = azurerm_resource_group.this.location
+  resource_group_name = azurerm_resource_group.this.name
+  tags                = local.common_tags
+
+  ip_configuration {
+    name                          = "primary"
+    subnet_id                     = azurerm_subnet.this.id
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = azurerm_public_ip.this.id
+  }
+}
+
+resource "azurerm_network_interface_security_group_association" "this" {
+  network_interface_id      = azurerm_network_interface.this.id
+  network_security_group_id = azurerm_network_security_group.this.id
+}
+
+resource "azurerm_network_security_rule" "minecraft_java" {
   name                        = "allow-minecraft-java"
   priority                    = 100
   direction                   = "Inbound"
@@ -37,6 +56,20 @@ resource "azurerm_network_security_rule" "minecraft" {
   protocol                    = "Tcp"
   source_port_range           = "*"
   destination_port_range      = tostring(var.minecraft_port)
+  source_address_prefix       = var.minecraft_source_address_prefix
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.this.name
+  network_security_group_name = azurerm_network_security_group.this.name
+}
+
+resource "azurerm_network_security_rule" "minecraft_bedrock" {
+  name                        = "allow-minecraft-bedrock"
+  priority                    = 101
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Udp"
+  source_port_range           = "*"
+  destination_port_range      = "19132"
   source_address_prefix       = var.minecraft_source_address_prefix
   destination_address_prefix  = "*"
   resource_group_name         = azurerm_resource_group.this.name
@@ -58,23 +91,3 @@ resource "azurerm_network_security_rule" "ssh" {
   resource_group_name         = azurerm_resource_group.this.name
   network_security_group_name = azurerm_network_security_group.this.name
 }
-
-resource "azurerm_network_interface" "this" {
-  name                = "${var.name_prefix}-nic"
-  location            = azurerm_resource_group.this.location
-  resource_group_name = azurerm_resource_group.this.name
-  tags                = local.common_tags
-
-  ip_configuration {
-    name                          = "primary"
-    subnet_id                     = azurerm_subnet.this.id
-    private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.this.id
-  }
-}
-
-resource "azurerm_network_interface_security_group_association" "this" {
-  network_interface_id      = azurerm_network_interface.this.id
-  network_security_group_id = azurerm_network_security_group.this.id
-}
-

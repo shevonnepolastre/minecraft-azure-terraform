@@ -8,4 +8,3 @@ terraform.tfvars
 backend.tf
 *.pem
 *.key
-.DS_Store

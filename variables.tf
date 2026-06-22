@@ -1,5 +1,5 @@
 variable "subscription_id" {
-  description = "Azure subscription ID used for this deployment."
+  description = "Add your Azure subscription ID. You can find this in the Azure portal under Subscriptions."
   type        = string
   sensitive   = true
 
@@ -12,7 +12,13 @@ variable "subscription_id" {
 variable "location" {
   description = "Azure region in which resources are created."
   type        = string
-  default     = "eastus"
+  default     = "eastus2"
+}
+
+variable "prefix" {
+  description = "Prefix used for naming Minecraft server resources."
+  type        = string
+  default     = "minecraft"
 }
 
 variable "name_prefix" {
@@ -27,9 +33,9 @@ variable "name_prefix" {
 }
 
 variable "vm_size" {
-  description = "Azure VM size. Standard_D2s_v5 is a reasonable starting point for a small server."
+  description = "Azure VM size. Standard_D2s_v3 is a reasonable starting point for a small server."
   type        = string
-  default     = "Standard_D2s_v5"
+  default     = "Standard_D2s_v3"
 }
 
 variable "admin_username" {
@@ -100,7 +106,7 @@ variable "minecraft_memory" {
 variable "max_players" {
   description = "Maximum number of simultaneous players."
   type        = number
-  default     = 10
+  default     = 5
 
   validation {
     condition     = var.max_players >= 1 && var.max_players <= 1000
@@ -131,9 +137,15 @@ variable "eula" {
 }
 
 variable "os_disk_size_gb" {
-  description = "OS disk size. Minecraft world data is stored under /opt/minecraft/data on this disk."
+  description = "OS disk size."
   type        = number
   default     = 64
+}
+
+variable "data_disk_size_gb" {
+  description = "Size of the persistent managed disk mounted at /opt/minecraft/data, holding Minecraft world data. This disk survives VM recreation, unlike the OS disk."
+  type        = number
+  default     = 32
 }
 
 variable "tags" {
@@ -145,3 +157,13 @@ variable "tags" {
   }
 }
 
+variable "minecraft_type" {
+  description = "Minecraft server platform used by the Docker container."
+  type        = string
+  default     = "FABRIC"
+
+  validation {
+    condition     = contains(["VANILLA", "FABRIC"], var.minecraft_type)
+    error_message = "minecraft_type must be VANILLA or FABRIC."
+  }
+}
