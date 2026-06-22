@@ -157,6 +157,27 @@ variable "tags" {
   }
 }
 
+variable "modrinth_mods" {
+  description = "Modrinth project slugs to install alongside fabric-api. Verify each slug at modrinth.com before applying — a wrong slug fails that mod's download at container startup, check `docker logs minecraft` after deploying."
+  type        = list(string)
+  default = [
+    # "geyser" omitted: no Fabric build available yet for the current Minecraft version
+    "floodgate", # currently inert without geyser; harmless to leave installed
+
+    "tree-harvester",
+    "balm",
+    "bluemap",
+    "collective",
+    "inventory-management",
+    "servux",
+    "eg-invisible-frames",
+    # "no-creeper-explosions" omitted: no build available yet for the current Minecraft version
+    "no-crop-trample",
+    "polymer",
+    "trashslot",
+  ]
+}
+
 variable "minecraft_type" {
   description = "Minecraft server platform used by the Docker container."
   type        = string
